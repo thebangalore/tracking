@@ -1,17 +1,19 @@
 /**
- * Storage abstraction for Gym Planner & Tracker
- * - Uses localStorage, with simple schema versioning and namespacing
- * - Provides export/import for backups
- * - All getters return sane defaults
+ * Storage abstraction (Workout-only version)
+ * Namespace bumped to wt.v1 to keep data isolated from prior version.
+ * Data persisted in localStorage.
+ *
+ * Models:
+ * Workout = {
+ *   date: 'YYYY-MM-DD',
+ *   exercises: [{ exerciseId: string, sets: [{ reps:number, weight:number }] }]
+ * }
  */
 
-const NS = 'gp.v1';
+const NS = 'wt.v1';
 
 const KEYS = {
-  plan: `${NS}.plan`,
   workouts: `${NS}.workouts`,
-  metrics: `${NS}.metrics`,
-  settings: `${NS}.settings`,
   exercisesCache: `${NS}.exercisesCache` // cache of exercises.json to allow offline + file:// fallback
 };
 
@@ -35,17 +37,9 @@ function write(key, value) {
 }
 
 export const Storage = {
-  // Plan
-  getPlan() {
-    return read(KEYS.plan, { name: 'My Plan', days: [], meta: { goal: 'hypertrophy', daysPerWeek: 3, equipment: [] } });
-  },
-  savePlan(plan) {
-    write(KEYS.plan, plan);
-  },
-
   // Workouts
   getWorkouts() {
-    // workouts stored as array of {date: 'YYYY-MM-DD', planDayIndex, exercises: [{exerciseId, sets:[{reps, weight}]}]}
+    // workouts stored as array of {date: 'YYYY-MM-DD', exercises: [{exerciseId, sets:[{reps, weight}]}]}
     return read(KEYS.workouts, []);
   },
   saveWorkouts(workouts) {
@@ -56,6 +50,8 @@ export const Storage = {
     const idx = all.findIndex(w => w.date === workout.date);
     if (idx >= 0) all[idx] = workout;
     else all.push(workout);
+    // keep sorted by date asc
+    all.sort((a, b) => a.date.localeCompare(b.date));
     this.saveWorkouts(all);
   },
   deleteWorkoutByDate(date) {
@@ -63,33 +59,7 @@ export const Storage = {
     this.saveWorkouts(all);
   },
 
-  // Body metrics
-  getMetrics() {
-    // [{date, weight, waist}]
-    return read(KEYS.metrics, []);
-  },
-  saveMetrics(metrics) {
-    write(KEYS.metrics, metrics);
-  },
-  addMetric(metric) {
-    const all = this.getMetrics();
-    const idx = all.findIndex(m => m.date === metric.date);
-    if (idx >= 0) all[idx] = metric;
-    else all.push(metric);
-    // sort by date asc
-    all.sort((a, b) => a.date.localeCompare(b.date));
-    this.saveMetrics(all);
-  },
-
-  // Settings
-  getSettings() {
-    return read(KEYS.settings, { theme: 'dark' });
-  },
-  saveSettings(settings) {
-    write(KEYS.settings, settings);
-  },
-
-  // Exercises cache
+  // Exercises cache (for exercises.json offline fallback)
   getExercisesCache() {
     return read(KEYS.exercisesCache, { updatedAt: null, items: [] });
   },
@@ -102,24 +72,16 @@ export const Storage = {
     const payload = {
       version: NS,
       exportedAt: new Date().toISOString(),
-      plan: this.getPlan(),
-      workouts: this.getWorkouts(),
-      metrics: this.getMetrics(),
-      settings: this.getSettings()
-      // exercises.json is static and not required for export; user can restore it by redeploying files
+      workouts: this.getWorkouts()
     };
     return payload;
   },
 
   importAll(payload) {
     if (!payload || typeof payload !== 'object') throw new Error('Invalid import payload');
-    if (!payload.version || !String(payload.version).startsWith('gp.v')) {
+    if (!payload.version || !String(payload.version).startsWith('wt.v')) {
       console.warn('Importing data with unknown version, attempting best-effort restore.');
     }
-    if (payload.plan) this.savePlan(payload.plan);
     if (Array.isArray(payload.workouts)) this.saveWorkouts(payload.workouts);
-    if (Array.isArray(payload.metrics)) this.saveMetrics(payload.metrics);
-    if (payload.settings) this.saveSettings(payload.settings);
-    // Do not overwrite exercises cache from import; it is derived from bundled JSON.
   }
 };
