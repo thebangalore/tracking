@@ -1,0 +1,80 @@
+[
+  { "id": "bb_back_squat", "name": "Barbell Back Squat", "primaryMuscle": "Quads", "equipment": "Barbell", "pattern": "Squat" },
+  { "id": "bb_front_squat", "name": "Barbell Front Squat", "primaryMuscle": "Quads", "equipment": "Barbell", "pattern": "Squat" },
+  { "id": "db_goblet_squat", "name": "Dumbbell Goblet Squat", "primaryMuscle": "Quads", "equipment": "Dumbbell", "pattern": "Squat" },
+  { "id": "smith_squat", "name": "Smith Machine Squat", "primaryMuscle": "Quads", "equipment": "Machine", "pattern": "Squat" },
+  { "id": "leg_press", "name": "Leg Press", "primaryMuscle": "Quads", "equipment": "Machine", "pattern": "Squat" },
+
+  { "id": "bb_deadlift", "name": "Barbell Deadlift", "primaryMuscle": "Hamstrings", "equipment": "Barbell", "pattern": "Hinge" },
+  { "id": "bb_rdl", "name": "Barbell Romanian Deadlift", "primaryMuscle": "Hamstrings", "equipment": "Barbell", "pattern": "Hinge" },
+  { "id": "db_rdl", "name": "Dumbbell Romanian Deadlift", "primaryMuscle": "Hamstrings", "equipment": "Dumbbell", "pattern": "Hinge" },
+  { "id": "kb_swing", "name": "Kettlebell Swing", "primaryMuscle": "Hamstrings", "equipment": "Kettlebell", "pattern": "Hinge" },
+  { "id": "hip_thrust", "name": "Barbell Hip Thrust", "primaryMuscle": "Glutes", "equipment": "Barbell", "pattern": "Hinge" },
+  { "id": "glute_bridge", "name": "Glute Bridge", "primaryMuscle": "Glutes", "equipment": "Bodyweight", "pattern": "Hinge" },
+  { "id": "back_extension", "name": "Back Extension", "primaryMuscle": "Lower Back", "equipment": "Machine", "pattern": "Hinge" },
+
+  { "id": "bb_bench_press", "name": "Barbell Bench Press", "primaryMuscle": "Chest", "equipment": "Barbell", "pattern": "Horizontal Push" },
+  { "id": "db_bench_press", "name": "Dumbbell Bench Press", "primaryMuscle": "Chest", "equipment": "Dumbbell", "pattern": "Horizontal Push" },
+  { "id": "db_incline_press", "name": "Dumbbell Incline Press", "primaryMuscle": "Chest", "equipment": "Dumbbell", "pattern": "Horizontal Push" },
+  { "id": "push_up", "name": "Push-up", "primaryMuscle": "Chest", "equipment": "Bodyweight", "pattern": "Horizontal Push" },
+  { "id": "machine_chest_press", "name": "Machine Chest Press", "primaryMuscle": "Chest", "equipment": "Machine", "pattern": "Horizontal Push" },
+  { "id": "cable_fly", "name": "Cable Fly", "primaryMuscle": "Chest", "equipment": "Cable", "pattern": "Accessory" },
+
+  { "id": "bb_ohp", "name": "Barbell Overhead Press", "primaryMuscle": "Shoulders", "equipment": "Barbell", "pattern": "Vertical Push" },
+  { "id": "db_shoulder_press", "name": "Dumbbell Shoulder Press", "primaryMuscle": "Shoulders", "equipment": "Dumbbell", "pattern": "Vertical Push" },
+  { "id": "arnold_press", "name": "Arnold Press", "primaryMuscle": "Shoulders", "equipment": "Dumbbell", "pattern": "Vertical Push" },
+  { "id": "machine_shoulder_press", "name": "Machine Shoulder Press", "primaryMuscle": "Shoulders", "equipment": "Machine", "pattern": "Vertical Push" },
+
+  { "id": "bb_row", "name": "Barbell Row", "primaryMuscle": "Back", "equipment": "Barbell", "pattern": "Horizontal Pull" },
+  { "id": "db_row", "name": "One-Arm Dumbbell Row", "primaryMuscle": "Back", "equipment": "Dumbbell", "pattern": "Horizontal Pull" },
+  { "id": "cable_row", "name": "Seated Cable Row", "primaryMuscle": "Back", "equipment": "Cable", "pattern": "Horizontal Pull" },
+  { "id": "tbar_row", "name": "T-Bar Row", "primaryMuscle": "Back", "equipment": "Machine", "pattern": "Horizontal Pull" },
+
+  { "id": "pull_up", "name": "Pull-up", "primaryMuscle": "Back", "equipment": "Bodyweight", "pattern": "Vertical Pull" },
+  { "id": "chin_up", "name": "Chin-up", "primaryMuscle": "Back", "equipment": "Bodyweight", "pattern": "Vertical Pull" },
+  { "id": "lat_pulldown", "name": "Lat Pulldown", "primaryMuscle": "Back", "equipment": "Machine", "pattern": "Vertical Pull" },
+  { "id": "cable_pullover", "name": "Cable Pullover", "primaryMuscle": "Back", "equipment": "Cable", "pattern": "Accessory" },
+
+  { "id": "db_lateral_raise", "name": "Dumbbell Lateral Raise", "primaryMuscle": "Shoulders", "equipment": "Dumbbell", "pattern": "Accessory" },
+  { "id": "cable_lateral_raise", "name": "Cable Lateral Raise", "primaryMuscle": "Shoulders", "equipment": "Cable", "pattern": "Accessory" },
+  { "id": "rear_delt_fly", "name": "Rear Delt Fly (Machine)", "primaryMuscle": "Shoulders", "equipment": "Machine", "pattern": "Accessory" },
+
+  { "id": "bb_curl", "name": "Barbell Curl", "primaryMuscle": "Biceps", "equipment": "Barbell", "pattern": "Accessory" },
+  { "id": "db_curl", "name": "Dumbbell Curl", "primaryMuscle": "Biceps", "equipment": "Dumbbell", "pattern": "Accessory" },
+  { "id": "incline_db_curl", "name": "Incline Dumbbell Curl", "primaryMuscle": "Biceps", "equipment": "Dumbbell", "pattern": "Accessory" },
+  { "id": "cable_curl", "name": "Cable Curl", "primaryMuscle": "Biceps", "equipment": "Cable", "pattern": "Accessory" },
+  { "id": "hammer_curl", "name": "Hammer Curl", "primaryMuscle": "Biceps", "equipment": "Dumbbell", "pattern": "Accessory" },
+
+  { "id": "bb_skullcrusher", "name": "Barbell Skullcrusher", "primaryMuscle": "Triceps", "equipment": "Barbell", "pattern": "Accessory" },
+  { "id": "db_triceps_extension", "name": "Dumbbell Overhead Triceps Extension", "primaryMuscle": "Triceps", "equipment": "Dumbbell", "pattern": "Accessory" },
+  { "id": "cable_triceps_pushdown", "name": "Cable Triceps Pushdown", "primaryMuscle": "Triceps", "equipment": "Cable", "pattern": "Accessory" },
+  { "id": "bench_dip", "name": "Bench Dip", "primaryMuscle": "Triceps", "equipment": "Bodyweight", "pattern": "Accessory" },
+
+  { "id": "standing_calf_raise", "name": "Standing Calf Raise", "primaryMuscle": "Calves", "equipment": "Machine", "pattern": "Accessory" },
+  { "id": "seated_calf_raise", "name": "Seated Calf Raise", "primaryMuscle": "Calves", "equipment": "Machine", "pattern": "Accessory" },
+  { "id": "db_calf_raise", "name": "Dumbbell Calf Raise", "primaryMuscle": "Calves", "equipment": "Dumbbell", "pattern": "Accessory" },
+
+  { "id": "plank", "name": "Plank", "primaryMuscle": "Core", "equipment": "Bodyweight", "pattern": "Accessory" },
+  { "id": "hanging_leg_raise", "name": "Hanging Leg Raise", "primaryMuscle": "Core", "equipment": "Bodyweight", "pattern": "Accessory" },
+  { "id": "cable_crunch", "name": "Cable Crunch", "primaryMuscle": "Core", "equipment": "Cable", "pattern": "Accessory" },
+  { "id": "ab_wheel", "name": "Ab Wheel Rollout", "primaryMuscle": "Core", "equipment": "Accessory", "pattern": "Accessory" },
+
+  { "id": "bb_lunge", "name": "Barbell Lunge", "primaryMuscle": "Quads", "equipment": "Barbell", "pattern": "Accessory" },
+  { "id": "db_lunge", "name": "Dumbbell Lunge", "primaryMuscle": "Quads", "equipment": "Dumbbell", "pattern": "Accessory" },
+  { "id": "db_bulgarian_split_squat", "name": "Dumbbell Bulgarian Split Squat", "primaryMuscle": "Quads", "equipment": "Dumbbell", "pattern": "Accessory" },
+
+  { "id": "good_morning", "name": "Barbell Good Morning", "primaryMuscle": "Hamstrings", "equipment": "Barbell", "pattern": "Hinge" },
+  { "id": "pendlay_row", "name": "Pendlay Row", "primaryMuscle": "Back", "equipment": "Barbell", "pattern": "Horizontal Pull" },
+  { "id": "seal_row", "name": "Seal Row", "primaryMuscle": "Back", "equipment": "Barbell", "pattern": "Horizontal Pull" },
+
+  { "id": "db_incline_row", "name": "Dumbbell Incline Row", "primaryMuscle": "Back", "equipment": "Dumbbell", "pattern": "Horizontal Pull" },
+  { "id": "face_pull", "name": "Face Pull", "primaryMuscle": "Shoulders", "equipment": "Cable", "pattern": "Accessory" },
+  { "id": "pec_deck", "name": "Pec Deck", "primaryMuscle": "Chest", "equipment": "Machine", "pattern": "Accessory" },
+  { "id": "squat_jump", "name": "Squat Jump", "primaryMuscle": "Quads", "equipment": "Bodyweight", "pattern": "Accessory" },
+
+  { "id": "bb_paused_bench", "name": "Paused Barbell Bench Press", "primaryMuscle": "Chest", "equipment": "Barbell", "pattern": "Horizontal Push" },
+  { "id": "db_floor_press", "name": "Dumbbell Floor Press", "primaryMuscle": "Chest", "equipment": "Dumbbell", "pattern": "Horizontal Push" },
+
+  { "id": "ohp_seated_db", "name": "Seated Dumbbell Press", "primaryMuscle": "Shoulders", "equipment": "Dumbbell", "pattern": "Vertical Push" },
+  { "id": "landmine_press", "name": "Landmine Press", "primaryMuscle": "Shoulders", "equipment": "Barbell", "pattern": "Accessory" }
+]
