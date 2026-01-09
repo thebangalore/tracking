@@ -1,20 +1,19 @@
 /**
- * App bootstrap and SPA navigation
- * - Initializes modules (Plan, Workout, Progress)
+ * Workout Tracker (no planner) - App bootstrap and SPA navigation
+ * - Initializes modules (Workout, History)
  * - Handles simple hash-based navigation between views
  * - Registers Service Worker (on http/https only) for offline support
- * - Orchestrates cross-module refresh on data import
  */
 
 import { $, $$ } from './utils.js';
-import { PlanModule } from './plan.js';
 import { WorkoutModule } from './workout.js';
-import { ProgressModule } from './progress.js';
+import { HistoryModule } from './history.js';
+import { loadExercises } from './exercises.js';
 
-const VIEWS = ['plan', 'workout', 'progress'];
+const VIEWS = ['workout', 'history'];
 
 function showView(view) {
-  if (!VIEWS.includes(view)) view = 'plan';
+  if (!VIEWS.includes(view)) view = 'workout';
 
   // Toggle nav active
   $$('.nav-btn').forEach(btn => {
@@ -35,7 +34,7 @@ function showView(view) {
 
 function currentViewFromHash() {
   const h = (location.hash || '').replace('#', '');
-  return VIEWS.includes(h) ? h : 'plan';
+  return VIEWS.includes(h) ? h : 'workout';
 }
 
 async function init() {
@@ -44,10 +43,12 @@ async function init() {
     btn.addEventListener('click', () => showView(btn.dataset.view));
   });
 
+  // Load exercises first (for filters and add UI)
+  await loadExercises();
+
   // Initialize modules
-  await PlanModule.init();
   WorkoutModule.init();
-  await ProgressModule.init();
+  HistoryModule.init();
 
   // Initial view
   showView(currentViewFromHash());
@@ -57,18 +58,16 @@ async function init() {
     showView(currentViewFromHash());
   });
 
-  // Import event triggers cross-module refresh
+  // Cross-module refresh after data import
   window.addEventListener('data:imported', () => {
-    PlanModule.refreshAfterImport();
     WorkoutModule.refreshAfterImport();
-    ProgressModule.refreshAfterImport();
+    HistoryModule.refreshAfterImport();
   });
 
   // Register SW for offline support (only on http/https, not file://)
   if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) {
     try {
       await navigator.serviceWorker.register('./sw.js', { scope: './' });
-      // Optional: console.log('Service worker registered');
     } catch (e) {
       console.warn('SW registration failed', e);
     }
