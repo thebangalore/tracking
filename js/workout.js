@@ -1,18 +1,24 @@
 /**
- * Workout logging module
- * Data model:
+ * Workout logging module (no planner)
+ * Model:
  * Workout = {
  *   date: 'YYYY-MM-DD',
- *   planDayIndex: number | null,
  *   exercises: [
  *     { exerciseId: string, sets: [ { reps: number, weight: number } ] }
  *   ]
  * }
  */
 
-import { $, $$, h, toNumber, formatDateInputValue } from './utils.js';
+import { $, $$, h, toNumber, formatDateInputValue, debounce } from './utils.js';
 import { Storage } from './storage.js';
-import { getExercises, getExerciseById } from './exercises.js';
+import {
+  getExercises,
+  getExerciseById,
+  uniqueMuscles,
+  uniqueEquipment,
+  uniquePatterns,
+  filterExercises
+} from './exercises.js';
 
 let state = {
   workout: createEmptyWorkout(formatDateInputValue())
@@ -24,9 +30,6 @@ export const WorkoutModule = {
     const dateEl = $('#workoutDate');
     if (!dateEl.value) dateEl.value = formatDateInputValue();
 
-    // Populate plan days
-    populatePlanDayOptions();
-
     // If a workout exists for today, load it
     const existing = findWorkoutByDate(dateEl.value);
     if (existing) {
@@ -34,26 +37,32 @@ export const WorkoutModule = {
     } else {
       state.workout = createEmptyWorkout(dateEl.value);
     }
+
+    renderLibraryFilters();
+    wireLibraryEvents();
+    renderExerciseLibrary();
+
     renderEditor();
 
     // Wire UI
-    $('#btnLoadDay').addEventListener('click', onLoadPlanDay);
     $('#btnSaveWorkout').addEventListener('click', onSaveWorkout);
     $('#workoutDate').addEventListener('change', onDateChange);
 
-    // Refresh plan day options when plan saved
-    window.addEventListener('plan:saved', () => {
-      populatePlanDayOptions();
-      // Do not overwrite current workout content
-    });
+    // Backup handlers (workout view)
+    const exportBtn = $('#btnExport');
+    if (exportBtn) exportBtn.addEventListener('click', onExport);
+    const importFile = $('#importFile');
+    if (importFile) importFile.addEventListener('change', onImportFile);
   },
 
   refreshAfterImport() {
-    populatePlanDayOptions();
     // Reload current date workout if present
     const date = $('#workoutDate').value || formatDateInputValue();
     const existing = findWorkoutByDate(date);
     state.workout = existing ? structuredClone(existing) : createEmptyWorkout(date);
+
+    renderLibraryFilters();
+    renderExerciseLibrary();
     renderEditor();
   }
 };
@@ -61,19 +70,14 @@ export const WorkoutModule = {
 // ---------------------- Helpers ----------------------
 
 function createEmptyWorkout(date) {
-  return { date, planDayIndex: null, exercises: [] };
+  return { date, exercises: [] };
 }
 
 function findWorkoutByDate(date) {
   return Storage.getWorkouts().find(w => w.date === date) || null;
 }
 
-function populatePlanDayOptions() {
-  const sel = $('#workoutPlanDay');
-  const plan = Storage.getPlan();
-  const opts = (plan.days || []).map((d, i) => `<option value="${i}">${i + 1}. ${d.name}</option>`).join('');
-  sel.innerHTML = opts || '<option value="">No plan days</option>';
-}
+// ---------------------- Date / Save ----------------------
 
 function onDateChange(e) {
   const date = e.target.value;
@@ -86,28 +90,6 @@ function onDateChange(e) {
   renderEditor();
 }
 
-function onLoadPlanDay() {
-  const sel = $('#workoutPlanDay');
-  const idx = parseInt(sel.value, 10);
-  const plan = Storage.getPlan();
-  if (!plan.days || !plan.days[idx]) return;
-  const day = plan.days[idx];
-
-  // Build workout from plan prescription
-  const exList = day.exercises.map(pex => ({
-    exerciseId: pex.exerciseId,
-    // Create placeholder sets according to targetSets; reps/weight left blank until user fills
-    sets: Array.from({ length: Math.max(1, pex.targetSets || 1) }, () => ({ reps: 0, weight: 0 }))
-  }));
-
-  state.workout = {
-    date: $('#workoutDate').value || formatDateInputValue(),
-    planDayIndex: idx,
-    exercises: exList
-  };
-  renderEditor();
-}
-
 function onSaveWorkout() {
   const cleaned = pruneEmptySets(structuredClone(state.workout));
   Storage.upsertWorkout(cleaned);
@@ -117,7 +99,7 @@ function onSaveWorkout() {
   btn.textContent = 'Saved ✓';
   setTimeout(() => { btn.textContent = 'Save Workout'; }, 1200);
 
-  // Notify others
+  // Notify history to refresh
   window.dispatchEvent(new CustomEvent('workouts:changed'));
 }
 
@@ -131,7 +113,79 @@ function pruneEmptySets(workout) {
   return workout;
 }
 
-// ---------------------- Rendering ----------------------
+// ---------------------- Library UI ----------------------
+
+function renderLibraryFilters() {
+  // Muscles
+  const muscles = uniqueMuscles();
+  const selM = $('#libMuscle');
+  if (selM) selM.innerHTML = '<option value="">All</option>' + muscles.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  // Equipment
+  const eqs = uniqueEquipment();
+  const selE = $('#libEquipment');
+  if (selE) selE.innerHTML = '<option value="">All</option>' + eqs.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  // Patterns
+  const pats = uniquePatterns();
+  const selP = $('#libPattern');
+  if (selP) selP.innerHTML = '<option value="">All</option>' + pats.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function wireLibraryEvents() {
+  const search = $('#libSearch');
+  const mus = $('#libMuscle');
+  const eq = $('#libEquipment');
+  const pat = $('#libPattern');
+
+  if (search) search.addEventListener('input', debounce(renderExerciseLibrary, 200));
+  if (mus) mus.addEventListener('change', renderExerciseLibrary);
+  if (eq) eq.addEventListener('change', renderExerciseLibrary);
+  if (pat) pat.addEventListener('change', renderExerciseLibrary);
+}
+
+function renderExerciseLibrary() {
+  const list = $('#exerciseList');
+  if (!list) return;
+  const q = ($('#libSearch')?.value) || '';
+  const muscle = ($('#libMuscle')?.value) || '';
+  const equipment = ($('#libEquipment')?.value) || '';
+  const pattern = ($('#libPattern')?.value) || '';
+  const results = filterExercises({ search: q, muscle, equipment, pattern });
+
+  list.innerHTML = '';
+  if (!results.length) {
+    list.appendChild(h('div', { class: 'muted' }, 'No exercises match.'));
+    return;
+  }
+
+  for (const ex of results) {
+    const row = h('div', { class: 'item' },
+      h('div', { class: 'title' }, ex.name),
+      h('div', { class: 'meta' },
+        h('span', { class: 'badge' }, ex.primaryMuscle),
+        h('span', { class: 'badge' }, ex.equipment),
+        h('span', { class: 'badge' }, ex.pattern)
+      ),
+      h('div', { class: 'row' },
+        h('button', {
+          class: 'small secondary',
+          onclick: () => {
+            addExerciseToCurrent(ex.id);
+          }
+        }, 'Add')
+      )
+    );
+    list.appendChild(row);
+  }
+}
+
+function addExerciseToCurrent(exerciseId) {
+  state.workout.exercises.push({ exerciseId, sets: [ { reps: 0, weight: 0 } ] });
+  renderEditor();
+}
+
+// ---------------------- Editor rendering ----------------------
 
 function renderEditor() {
   // Date reflect state
@@ -139,6 +193,7 @@ function renderEditor() {
   if (!dateEl.value) dateEl.value = state.workout.date;
 
   const wrap = $('#workoutExercises');
+  if (!wrap) return;
   wrap.innerHTML = '';
 
   // Render each exercise
@@ -146,7 +201,7 @@ function renderEditor() {
     wrap.appendChild(renderExerciseBlock(wex, idx));
   });
 
-  // Add-exercise row
+  // Add-exercise row (quick add)
   wrap.appendChild(renderAddExerciseRow());
 }
 
@@ -214,7 +269,7 @@ function renderAddExerciseRow() {
     renderEditor();
   } }, 'Add Exercise');
   return h('div', { class: 'row', style: { marginTop: '8px' } },
-    h('span', { class: 'muted' }, 'Add exercise:'),
+    h('span', { class: 'muted' }, 'Quick add:'),
     select,
     btn
   );
@@ -248,4 +303,40 @@ function removeSet(exIdx, setIdx) {
 function updateSet(exIdx, setIdx, patch) {
   const set = state.workout.exercises[exIdx].sets[setIdx];
   Object.assign(set, patch);
+}
+
+// ---------------------- Backup (workout view) ----------------------
+
+function onExport() {
+  const data = Storage.exportAll();
+  const dt = new Date().toISOString().split('T')[0];
+  downloadJSON(`workout-tracker-backup-${dt}.json`, data);
+}
+
+function downloadJSON(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(url);
+  a.remove();
+}
+
+async function onImportFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    Storage.importAll(data);
+    window.dispatchEvent(new CustomEvent('data:imported'));
+  } catch (err) {
+    console.warn('Import failed:', err);
+    alert('Invalid JSON file.');
+  } finally {
+    e.target.value = '';
+  }
 }
