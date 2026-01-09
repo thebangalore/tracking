@@ -1,4 +1,4 @@
-/* Simple offline service worker for Gym Planner & Tracker
+/* Simple offline service worker for Workout Tracker (no planner)
  * Strategy:
  *  - Precache app shell and static assets on install
  *  - Cache-first for static file requests
@@ -6,8 +6,8 @@
  *  - Cache exercises.json for offline exercise library
  */
 
-const CACHE_VERSION = 'v1.0.0';
-const CACHE_NAME = `gym-planner-${CACHE_VERSION}`;
+const CACHE_VERSION = 'wt-v1.0.0';
+const CACHE_NAME = `workout-tracker-${CACHE_VERSION}`;
 
 const ASSETS = [
   './',
@@ -17,10 +17,8 @@ const ASSETS = [
   './js/utils.js',
   './js/storage.js',
   './js/exercises.js',
-  './js/plan.js',
   './js/workout.js',
-  './js/progress.js',
-  './js/charts.js',
+  './js/history.js',
   './exercises.json'
 ];
 
@@ -75,7 +73,6 @@ async function cacheFirst(req) {
     }
     return res;
   } catch (e) {
-    // As a minimal offline fallback, return a Response if needed
     return new Response('Offline', { status: 503, statusText: 'Offline' });
   }
 }
